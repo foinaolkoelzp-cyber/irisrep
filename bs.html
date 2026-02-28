@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>⎔ MOD · 3D · TEX — просмотр фото</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: #111111;
+      color: #cccccc;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      font-weight: 300;
+      line-height: 1.5;
+      image-rendering: pixelated;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw; height: 100vh;
+      background-image: 
+        linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+      background-size: 32px 32px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .container {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 40px 24px;
+      position: relative;
+      z-index: 2;
+    }
+
+    h1, h2, h3, .section-title {
+      font-weight: 350;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: #f0f0f0;
+    }
+
+    .section-title {
+      font-size: 1.8rem;
+      margin: 48px 0 24px 0;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      border-left: 6px solid #888;
+      padding-left: 16px;
+      color: #dddddd;
+      font-weight: 350;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 20px;
+      margin-bottom: 40px;
+      padding: 16px 0;
+      border-bottom: 2px solid #333;
+    }
+
+    .logo {
+      font-size: 2.2rem;
+      font-weight: 300;
+      color: #eaeaea;
+    }
+
+    .logo i {
+      color: #aaa;
+      margin-right: 8px;
+    }
+
+    .cart-minimal {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      background: #1a1a1a;
+      padding: 12px 24px;
+      border: 2px solid #3a3a3a;
+    }
+
+    .cart-minimal span {
+      font-size: 2rem;
+      font-weight: 300;
+      color: white;
+    }
+
+    .reset-cart {
+      background: none;
+      border: 2px solid #555;
+      color: #aaa;
+      padding: 8px 18px;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: 0.15s;
+      font-weight: 300;
+      letter-spacing: 1px;
+    }
+
+    .reset-cart:hover {
+      border-color: #fff;
+      color: white;
+    }
+
+
+    .gallery {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 2px;
+      margin: 32px 0 48px;
+      background: #222;
+      padding: 2px;
+    }
+
+    .gallery-item {
+      aspect-ratio: 1/1;
+      background: #1d1d1d;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-end;
+      border: 2px solid #2b2b2b;
+      color: #aaa;
+      transition: 0.1s;
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      background-size: cover;
+      background-position: center;
+      position: relative;
+      cursor: pointer; 
+    }
+
+    .gallery-item span {
+      background: rgba(0,0,0,0.7);
+      padding: 4px 8px;
+      border: 1px solid #555;
+      margin-bottom: 8px;
+      z-index: 2;
+    }
+
+    .gallery-item:hover {
+      border-color: #777;
+      transform: scale(1.01);
+    }
+
+
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 9999;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,0.95);
+      backdrop-filter: blur(4px);
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+    }
+
+    .modal.active {
+      display: flex;
+    }
+
+    .modal-content {
+      max-width: 90vw;
+      max-height: 85vh;
+      border: 4px solid #3a3a3a;
+      box-shadow: 0 0 30px #2affb633;
+      image-rendering: pixelated;
+    }
+
+    .modal-caption {
+      color: #ccc;
+      margin-top: 16px;
+      font-size: 1.3rem;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      border: 2px solid #444;
+      padding: 8px 24px;
+      background: #111;
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 30px;
+      right: 50px;
+      color: #aaa;
+      font-size: 3rem;
+      cursor: pointer;
+      border: 2px solid #555;
+      width: 60px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #1a1a1a;
+    }
+
+    .modal-close:hover {
+      color: white;
+      border-color: #aaa;
+    }
+
+    .category-row {
+      display: flex;
+      gap: 8px;
+      margin: 16px 0 24px;
+      flex-wrap: wrap;
+      border-bottom: 1px solid #2e2e2e;
+      padding-bottom: 20px;
+    }
+
+    .cat-min {
+      background: transparent;
+      border: 2px solid #3b3b3b;
+      padding: 8px 28px;
+      font-size: 1.1rem;
+      font-weight: 300;
+      color: #aaa;
+      cursor: pointer;
+      transition: 0.1s;
+      letter-spacing: 0.5px;
+    }
+
+    .cat-min.active, .cat-min:hover {
+      border-color: #aaa;
+      color: white;
+      background: #1f1f1f;
+    }
+
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 2px;
+      background: #292929;
+      padding: 2px;
+      margin-bottom: 40px;
+    }
+
+    .product-card {
+      background: #1c1c1c;
+      border: 2px solid #2b2b2b;
+      padding: 24px 20px 20px;
+      display: flex;
+      flex-direction: column;
+      transition: 0.1s;
+    }
+
+    .product-card:hover {
+      border-color: #6a6a6a;
+      background: #202020;
+    }
+
+    .product-name {
+      font-size: 1.2rem;
+      font-weight: 350;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: #dfdfdf;
+    }
+
+    .badge {
+      font-size: 0.7rem;
+      border: 1px solid #4b4b4b;
+      padding: 4px 8px;
+      color: #888;
+      background: #151515;
+      letter-spacing: 0.5px;
+    }
+
+    .product-price {
+      font-size: 2.2rem;
+      font-weight: 250;
+      margin: 20px 0 12px;
+      color: #f5f5f5;
+      line-height: 1;
+    }
+
+    .product-price small {
+      font-size: 1rem;
+      font-weight: 200;
+      color: #777;
+      margin-left: 4px;
+    }
+
+    .add-to-cart {
+      background: transparent;
+      border: 2px solid #444;
+      color: #b0b0b0;
+      padding: 14px 0;
+      font-size: 1.1rem;
+      font-weight: 300;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      cursor: pointer;
+      margin-top: 8px;
+      transition: 0.1s;
+      letter-spacing: 1px;
+    }
+
+    .add-to-cart:hover {
+      border-color: #aaa;
+      color: white;
+      background: #262626;
+    }
+
+    .conditions-min {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 2px;
+      background: #292929;
+      padding: 2px;
+      margin: 48px 0;
+    }
+
+    .cond-min-item {
+      background: #1a1a1a;
+      border: 2px solid #2c2c2c;
+      padding: 20px 12px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      color: #bbb;
+      font-size: 1.1rem;
+      font-weight: 300;
+    }
+
+    .cond-min-item i {
+      font-size: 1.8rem;
+      color: #7a7a7a;
+    }
+
+    .cart-drawer {
+      position: fixed;
+      bottom: 30px; right: 30px;
+      width: 340px;
+      background: #151515;
+      border: 2px solid #3b3b3b;
+      padding: 20px;
+      z-index: 100;
+      box-shadow: 12px 12px 0 rgba(0,0,0,0.5);
+    }
+
+    .cart-header-min {
+      display: flex;
+      justify-content: space-between;
+      border-bottom: 2px solid #3e3e3e;
+      padding-bottom: 12px;
+      margin-bottom: 16px;
+      font-size: 1.3rem;
+      font-weight: 300;
+    }
+
+    #cart-items {
+      list-style: none;
+      max-height: 260px;
+      overflow-y: auto;
+      margin-bottom: 20px;
+      background: #1e1e1e;
+      border: 2px solid #313131;
+      padding: 12px;
+      font-weight: 300;
+    }
+
+    #cart-items li {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid #3a3a3a;
+      color: #ccc;
+    }
+
+    .cart-footer-min {
+      border-top: 2px solid #3d3d3d;
+      padding-top: 16px;
+      font-weight: 400;
+      font-size: 1.6rem;
+      display: flex;
+      justify-content: space-between;
+      color: #eee;
+    }
+
+    .hide-cart-min {
+      background: none;
+      border: 2px solid #555;
+      color: #999;
+      padding: 4px 16px;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+
+    .hide-cart-min:hover {
+      border-color: #ccc;
+      color: white;
+    }
+
+    .footer-min {
+      margin-top: 60px;
+      padding: 24px 0;
+      border-top: 2px solid #333;
+      text-align: center;
+      color: #6a6a6a;
+      font-weight: 200;
+      letter-spacing: 1.5px;
+    }
+
+    * {
+      border-radius: 0 !important;
+    }
+
+    #cart-items::-webkit-scrollbar {
+      width: 6px;
+      background: #222;
+    }
+    #cart-items::-webkit-scrollbar-thumb {
+      background: #555;
+    }
+
+    .category-section {
+      transition: opacity 0.2s ease;
+    }
+    .category-section.hidden {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <div class="header">
+    <div class="logo">
+      <i class="fas fa-cube"></i> [ dev/tex/3d ]
+    </div>
+    <div class="cart-minimal">
+      <i class="fas fa-shopping-bag" style="color:#aaa; font-size:1.8rem;"></i>
+      <span id="cart-total">0</span><span style="color:#888; font-size:1.2rem;">₽</span>
+      <button class="reset-cart" id="reset-cart-btn">〈 сброс 〉</button>
+    </div>
+  </div>
+
+
+  <div class="gallery" id="gallery">
+    <div class="gallery-item" style="background-image: url(1.png);" data-full=1.png data-caption="Render">
+      <span>Render</span>
+    </div>
+    <div class="gallery-item" style="background-image: url(2.png);" data-full=2.png data-caption="Render">
+      <span>Render</span>
+    </div>
+    <div class="gallery-item" style="background-image: url(3.png);" data-full=3.png data-caption="Render">
+      <span>Render</span>
+    </div>
+    <div class="gallery-item" style="background-image: url(fdf.png);" data-full=fdf.png data-caption="Pixel art">
+      <span>Pixel art</span>
+    </div>
+    <div class="gallery-item" style="background-image: url(image.png);" data-full=image.png data-caption="Model + Texture">
+      <span>Model + Texture</span>
+    </div>
+    <div class="gallery-item" style="background-image: url(image\ copy.png);" data-full="image copy.png" data-caption="Model + Texture">
+      <span>Model + Texture</span>
+    </div>
+  </div>
+
+
+  <div class="modal" id="imageModal">
+    <div class="modal-close" id="modalClose">✕</div>
+    <img class="modal-content" id="modalImage" src="" alt="full size">
+    <div class="modal-caption" id="modalCaption"></div>
+  </div>
+
+
+  <div class="category-row" id="filterRow">
+    <span class="cat-min active" data-filter="all">[ все ]</span>
+    <span class="cat-min" data-filter="modding">[ моддинг ]</span>
+    <span class="cat-min" data-filter="models">[ 3d ]</span>
+    <span class="cat-min" data-filter="textures">[ текстуры ]</span>
+    <span class="cat-min" data-filter="renders">[ рендеры ]</span>
+  </div>
+
+
+  <div class="category-section" id="section-modding">
+    <h2 class="section-title"><i class="fas fa-code"></i> MINECRAFT MOD DEVELOPMENT</h2>
+    <div class="cards-grid" data-category="modding"></div>
+  </div>
+
+  <div class="category-section" id="section-models">
+    <h2 class="section-title"><i class="fas fa-cubes"></i> 3D МОДЕЛИ</h2>
+    <div class="cards-grid" data-category="models"></div>
+  </div>
+
+  <div class="category-section" id="section-textures">
+    <h2 class="section-title"><i class="fas fa-palette"></i> ТЕКСТУРЫ</h2>
+    <div class="cards-grid" data-category="textures"></div>
+  </div>
+
+  <div class="category-section" id="section-renders">
+    <h2 class="section-title"><i class="fas fa-ray"></i> РЕНДЕРЫ</h2>
+    <div class="cards-grid" data-category="renders"></div>
+  </div>
+
+  <div class="conditions-min">
+    <div class="cond-min-item"><i class="fas fa-percent"></i> предоплата 50%</div>
+    <div class="cond-min-item"><i class="fas fa-pen"></i> 2 правки</div>
+    <div class="cond-min-item"><i class="fas fa-clock"></i> сроки = объём</div>
+    <div class="cond-min-item"><i class="fas fa-file-alt"></i> чёткое тз</div>
+    <div class="cond-min-item"><i class="fas fa-tag"></i> <1.20.1 +5%</div>
+    <div class="cond-min-item"><i class="fas fa-rocket"></i> срочно +30%</div>
+  </div>
+
+  <div class="footer-min">
+    <i class="fas fa-arrow-down"></i> заказ: описание + версия + сроки + референсы — @mc_minimal
+  </div>
+
+  <div class="cart-drawer" id="cartDrawer">
+    <div class="cart-header-min">
+      <span><i class="fas fa-archive"></i> КОРЗИНА</span>
+      <button class="hide-cart-min" id="toggleCartBtn">⇅</button>
+    </div>
+    <ul id="cart-items"></ul>
+    <div class="cart-footer-min">
+      <span>ИТОГО</span>
+      <span id="cart-total-footer">0 ₽</span>
+    </div>
+  </div>
+</div>
+
+<script>
+  (function() {
+    const products = [
+      { cat: 'modding', name: '1 предмет', price: 10 },
+      { cat: 'modding', name: '1 блок', price: 15 },
+      { cat: 'modding', name: 'Простая игровая система', price: 35 },
+      { cat: 'modding', name: 'GUI с функционалом', price: 55 },
+      { cat: 'modding', name: 'Кастомная сущность (поведение+рендер)', price: 75 },
+      { cat: 'modding', name: 'Босс с уникальными механиками', price: 120 },
+      { cat: 'modding', name: 'Биом с генерацией', price: 80 },
+      { cat: 'modding', name: 'Новое измерение', price: 20 },
+      { cat: 'modding', name: 'Сложная система / ИИ архитектура', price: 300, min: true },
+      { cat: 'models', name: 'Предмет', price: 40 },
+      { cat: 'models', name: 'Блок', price: 45 },
+      { cat: 'models', name: 'Детализированный объект', price: 250 },
+      { cat: 'models', name: 'Моб / персонаж', price: 450 },
+      { cat: 'models', name: 'Комплексная сцена', price: 500, min: true },
+      { cat: 'textures', name: '1 текстура (16x/32x)', price: 30 },
+      { cat: 'textures', name: 'HD текстура (64x+)', price: 75 },
+      { cat: 'textures', name: 'Набор 5 текстур', price: 200 },
+      { cat: 'textures', name: 'Набор 10 текстур', price: 350 },
+      { cat: 'textures', name: 'Полный ресурс-пак', price: 600, min: true },
+      { cat: 'renders', name: 'Предметный рендер', price: 15 },
+      { cat: 'renders', name: 'Персонаж в сцене', price: 20 },
+      { cat: 'renders', name: 'Большая сцена с освещением', price: 45 },
+      { cat: 'renders', name: 'Кинематографический рендер', price: 75 },
+    ];
+
+    let cart = [];
+
+    function renderProductCards() {
+      for (const cat of ['modding', 'models', 'textures', 'renders']) {
+        const container = document.querySelector(`.cards-grid[data-category="${cat}"]`);
+        if (!container) continue;
+        const filtered = products.filter(p => p.cat === cat);
+        container.innerHTML = filtered.map(p => {
+          const priceDisplay = p.min ? `от ${p.price}` : `${p.price}`;
+          return `
+            <div class="product-card">
+              <div class="product-name">
+                <span>${p.name}</span>
+                <span class="badge">${p.cat}</span>
+              </div>
+              <div class="product-price">${priceDisplay}<small> ₽</small></div>
+              <button class="add-to-cart" data-name="${p.name}" data-price="${p.price}">
+                <i class="fas fa-plus"></i> добавить
+              </button>
+            </div>
+          `;
+        }).join('');
+      }
+      bindAddEvents();
+    }
+
+    function bindAddEvents() {
+      document.querySelectorAll('.add-to-cart').forEach(btn => {
+        btn.removeEventListener('click', window.addH);
+        const handler = (e) => {
+          const name = e.currentTarget.dataset.name;
+          const price = parseInt(e.currentTarget.dataset.price);
+          cart.push({ name, price });
+          updateCart();
+          e.currentTarget.style.borderColor = '#aaa';
+          e.currentTarget.style.color = '#fff';
+          setTimeout(() => {
+            e.currentTarget.style.borderColor = '#444';
+            e.currentTarget.style.color = '#b0b0b0';
+          }, 150);
+        };
+        btn.addEventListener('click', handler);
+        btn.addH = handler;
+      });
+    }
+
+    function updateCart() {
+      const total = cart.reduce((s, i) => s + i.price, 0);
+      document.getElementById('cart-total').innerText = total;
+      document.getElementById('cart-total-footer').innerText = total + ' ₽';
+
+      const list = document.getElementById('cart-items');
+      if (!cart.length) {
+        list.innerHTML = '<li style="justify-content:center; color:#666;">——— пусто ———</li>';
+      } else {
+        list.innerHTML = cart.map((item, idx) => `
+          <li>
+            <span>${item.name} · ${item.price}₽</span>
+            <button style="background:none; border:1px solid #666; color:#b0b0b0; padding:2px 10px;" onclick="removeItem(${idx})">✕</button>
+          </li>
+        `).join('');
+      }
+    }
+
+    window.removeItem = function(index) {
+      cart.splice(index, 1);
+      updateCart();
+    };
+
+    document.getElementById('reset-cart-btn').addEventListener('click', () => {
+      cart = [];
+      updateCart();
+    });
+
+    // ========== FILTER SYSTEM ==========
+    function initFilters() {
+      const filterButtons = document.querySelectorAll('.cat-min');
+      const sections = {
+        modding: document.getElementById('section-modding'),
+        models: document.getElementById('section-models'),
+        textures: document.getElementById('section-textures'),
+        renders: document.getElementById('section-renders')
+      };
+
+      function showAll() {
+        Object.values(sections).forEach(section => section.classList.remove('hidden'));
+      }
+
+      function hideAll() {
+        Object.values(sections).forEach(section => section.classList.add('hidden'));
+      }
+
+      filterButtons.forEach(btn => {
+        btn.addEventListener('click', function() {
+          filterButtons.forEach(b => b.classList.remove('active'));
+          this.classList.add('active');
+
+          const filter = this.dataset.filter;
+
+          if (filter === 'all') {
+            showAll();
+          } else {
+            hideAll();
+            if (filter === 'modding' && sections.modding) sections.modding.classList.remove('hidden');
+            if (filter === 'models' && sections.models) sections.models.classList.remove('hidden');
+            if (filter === 'textures' && sections.textures) sections.textures.classList.remove('hidden');
+            if (filter === 'renders' && sections.renders) sections.renders.classList.remove('hidden');
+          }
+        });
+      });
+    }
+
+    // ========== MODAL for GALLERY ==========
+    function initModal() {
+      const modal = document.getElementById('imageModal');
+      const modalImg = document.getElementById('modalImage');
+      const modalCaption = document.getElementById('modalCaption');
+      const closeBtn = document.getElementById('modalClose');
+
+      // открытие при клике на gallery-item
+      document.querySelectorAll('.gallery-item').forEach(item => {
+        item.addEventListener('click', function(e) {
+          // не открывать если кликнули по кнопке в корзине (но там нет кнопок)
+          const fullSrc = this.dataset.full;
+          const caption = this.dataset.caption;
+          if (fullSrc) {
+            modalImg.src = fullSrc;
+            modalCaption.textContent = caption || '';
+            modal.classList.add('active');
+          }
+        });
+      });
+
+      // закрытие по крестику
+      closeBtn.addEventListener('click', () => {
+        modal.classList.remove('active');
+      });
+
+      // закрытие по клику вне изображения (на задний фон)
+      modal.addEventListener('click', function(e) {
+        if (e.target === modal) {
+          modal.classList.remove('active');
+        }
+      });
+
+      // закрытие по ESC
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && modal.classList.contains('active')) {
+          modal.classList.remove('active');
+        }
+      });
+    }
+
+    document.getElementById('toggleCartBtn').addEventListener('click', function() {
+      const items = document.getElementById('cart-items');
+      const footer = document.querySelector('.cart-footer-min');
+      if (items.style.display === 'none') {
+        items.style.display = 'block';
+        footer.style.display = 'flex';
+        this.innerText = '⇅';
+      } else {
+        items.style.display = 'none';
+        footer.style.display = 'none';
+        this.innerText = '⇵';
+      }
+    });
+
+    renderProductCards();
+    updateCart();
+    initFilters();
+    initModal();
+  })();
+</script>
+</body>
+</html>
